@@ -2,15 +2,15 @@
 
 $time = Get-Date -Format "yyyy-MM-dd HH:mm:ss" # <-- Sets time/date format for logging
 $comp_name = $env:COMPUTERNAME # <-- Stores name of the host being targeted
-$log_file = "C:\ProgramData\Chrome_Update_Log.txt" <-- Logs file in Chrome_Update_Log.txt
+$log_file = "C:\ProgramData\Chrome_Update_Log.txt" # <-- Logs file in Chrome_Update_Log.txt
 
 # Helper function for logging
 function log { 
     param([string] $message) 
-    Add-Content -Path $log_file -Value "[$time][$comp_name] $message" # <-- adds line with log text to Chrome_Update_Log.txt
+    Add-Content -Path $log_file -Value "[$time][$comp_name] $message" # <-- adds line to Chrome_Update_Log.txt
 }
 
-log "Starting Chrome update for $comp_name" # <-- Logs the host name of target
+log "Starting Chrome update for $comp_name" # <-- Logs which host the script is about to run on
 
 # Locates chrome uninstall key, for both 64 bit and 32 bit versions
 $uninstallRoots = @( 
@@ -20,7 +20,7 @@ $uninstallRoots = @(
 $chromeKey = $null # <-- initally set to null until Chrome is found
 
 # Loops thru each uninstall root
-foreach ($root in $uninstallRoots) {  # For each object, tries to read the uninstall root
+foreach ($root in $uninstallRoots) {  # <-- For each object, tries to read the uninstall root
     $found = Get-ChildItem $root -ErrorAction SilentlyContinue | ForEach-Object { 
         try {
             $item = Get-ItemProperty $_.PSPath -ErrorAction Stop 
@@ -46,26 +46,26 @@ try {
     log "Detected Chrome version: $cur_version" # <-- Logs version using variable
 	
     $min_version = "200.0.0.0" # <-- Set the minimum version acceptable version for Chrome
-    if ([version]$cur_version -ge [version]$min_version) { # If current version, is more than the min_version, log and don't update.
+    if ([version]$cur_version -ge [version]$min_version) { # If current version, is more than the min_version, log and don't update chrome.
         log "Chrome already >= $min_version—no action needed." 
         exit 0
-    } else {
-        log "Chrome < $min_version—will update."
+    } else { # if current version is lower than the min_version, proceed and log
+        log "Chrome < $min_version—will update." 
     }
-} catch {
+} catch { # logs error if issue with reading the chrome version
     log "ERROR reading version at $chromeKey—$_"
     exit 1
 }
 
 # Download Enterprise MSI Paths
-$installer_url  = "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi"
+$installer_url  = "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi" 
 $installer_path = "$env:TEMP\ChromeEnterprise.msi"
 
 try {
-    Invoke-WebRequest -Uri $installer_url -OutFile $installer_path -ErrorAction Stop # Downloads installer
+    Invoke-WebRequest -Uri $installer_url -OutFile $installer_path -ErrorAction Stop # <-- Downloads installer
     log "Downloaded MSI to $installer_path" 
 } catch {
-    log "ERROR downloading MSI—$_" # Logs Error if download failed
+    log "ERROR downloading MSI—$_" # <-- Logs Error if download failed
     exit 1
 }
 
@@ -74,16 +74,16 @@ try {
     Start-Process msiexec.exe -ArgumentList "/i `"$installer_path`" /qn /norestart" -Wait -ErrorAction Stop # <-- Installs chrome in the background, silently
     log "Silent install completed"
 } catch {
-    log "ERROR during install—$_"  # <-- Error logged if silent install fails
+    log "ERROR during install—$_" # <-- Error logged if silent install fails
     exit 1
 }
 
-# Cleanup (Removes installer)
+# Cleanup (removes installer)
 try {
     Remove-Item $installer_path -Force
-    log "Installer cleaned up"
-} catch {
-    log "WARNING: Could not delete installer file"
+    log "Installer cleaned up" # <-- Logs that installer was sucessfully removed
+} catch { 
+    log "WARNING: Could not delete installer file" # <-- if error occurs while trying to remove installer, logs error
 }
 
-log "Chrome update process complete."
+log "Chrome update complete."
