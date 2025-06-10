@@ -1,8 +1,8 @@
 # Chrome Auto Update PS Script
 
-$time       = Get-Date -Format "yyyy-MM-dd HH:mm:ss" # <-- Sets time/date format for logging
-$comp_name  = $env:COMPUTERNAME # <-- Stores name of the host being targeted
-$log_file   = "C:\ProgramData\Chrome_Update_Log.txt" <-- Logs file in Chrome_Update_Log.txt
+$time = Get-Date -Format "yyyy-MM-dd HH:mm:ss" # <-- Sets time/date format for logging
+$comp_name = $env:COMPUTERNAME # <-- Stores name of the host being targeted
+$log_file = "C:\ProgramData\Chrome_Update_Log.txt" <-- Logs file in Chrome_Update_Log.txt
 
 # Helper function for logging
 function log { 
