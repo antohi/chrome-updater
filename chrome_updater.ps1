@@ -1,8 +1,8 @@
-# Chrome Auto Update PS Script
+ # Chrome Auto Update PS Script
 
 $time = Get-Date -Format "yyyy-MM-dd HH:mm:ss" # <-- Sets time/date format for logging
 $comp_name = $env:COMPUTERNAME # <-- Stores name of the host being targeted
-$log_file = "C:\ProgramData\Chrome_Update_Log.txt" # <-- Logs file in Chrome_Update_Log.txt
+$log_file = "C:\scripts\Chrome_Update_Log.txt" # <-- Logs file in Chrome_Update_Log.txt
 
 # Helper function for logging
 function log { 
@@ -18,6 +18,18 @@ $uninstallRoots = @(
     "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" # <-- 32 bit version
 )
 $chromeKey = $null # <-- initally set to null until Chrome is found
+
+
+# Get latest Chrome version from Chrome for Developers Google API
+try {
+    $apiUrl = "https://versionhistory.googleapis.com/v1/chrome/platforms/win64/channels/stable/versions" # <-- Stores API url in variable
+    $latestVersion = (Invoke-WebRequest -Uri $apiUrl).Content | ConvertFrom-Json | Select-Object -ExpandProperty versions | Select-Object -First 1 | Select-Object -ExpandProperty version
+    # ^ Sets up GET request and pulls version number
+    log "Fetched latest Chrome version from API: $latest_version" 
+} catch { # If issue arises, defaults to "custom" latest version
+    log "WARNING: Could not retrieve latest version, using default version instead"
+    $latest_version = "137.0.0.0"
+}
 
 # Loops thru each uninstall root
 foreach ($root in $uninstallRoots) {  # <-- For each object, tries to read the uninstall root
@@ -45,7 +57,7 @@ try {
     $cur_version = (Get-ItemProperty $chromeKey -ErrorAction Stop).DisplayVersion # <-- Sets chrome version to variable
     log "Detected Chrome version: $cur_version" # <-- Logs version using variable
 	
-    $min_version = "200.0.0.0" # <-- Set the minimum version acceptable version for Chrome
+    $min_version = $latest_version # <-- Set the minimum version acceptable version for Chrome
     if ([version]$cur_version -ge [version]$min_version) { # If current version, is more than the min_version, log and don't update chrome.
         log "Chrome already >= $min_version—no action needed." 
         exit 0
@@ -86,4 +98,4 @@ try {
     log "WARNING: Could not delete installer file" # <-- if error occurs while trying to remove installer, logs error
 }
 
-log "Chrome update complete."
+log "Chrome update complete." 
