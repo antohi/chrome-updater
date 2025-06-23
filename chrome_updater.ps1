@@ -2,7 +2,7 @@
 
 $time = Get-Date -Format "yyyy-MM-dd HH:mm:ss" # <-- Sets time/date format for logging
 $comp_name = $env:COMPUTERNAME # <-- Stores name of the host being targeted
-$log_file = "C:\scripts\Chrome_Update_Log.txt" # <-- Logs file in Chrome_Update_Log.txt
+$log_file = "\\DC1\scripts\Chrome_Update_Log.txt" # <-- Logs file in Chrome_Update_Log.txt
 
 # Helper function for logging
 function log { 
@@ -26,7 +26,7 @@ try {
     $latestVersion = (Invoke-WebRequest -Uri $apiUrl).Content | ConvertFrom-Json | Select-Object -ExpandProperty versions | Select-Object -First 1 | Select-Object -ExpandProperty version
     # ^ Sets up GET request and pulls version number
     log "Fetched latest Chrome version from API: $latest_version" 
-} catch { # If issue arises, defaults to "custom" latest version
+} catch {
     log "WARNING: Could not retrieve latest version, using default version instead"
     $latest_version = "137.0.0.0"
 }
